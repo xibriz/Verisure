@@ -16,7 +16,8 @@ class verisure {
     public static $LOGIN_INPUT_USERNAME = "j_username"; //NAME of username INPUT in login FORM
     public static $LOGIN_INPUT_PASSWORD = "j_password"; //NAME of passowrd INPUT in login FORM
     
-    
+    private static $COOKIE_FILE = "verisure_cookiefile.txt", $CURL_ERROR_FILE = "verisure_curl_error.txt";
+        
     public $ch = null;
     private $debug = false, $fh = null;
 
@@ -24,6 +25,14 @@ class verisure {
      * Init cULR
      */
     public function __construct() {
+        //Try to create file
+        if (!file_exists(realpath(projectConfig::$VERISURE_TMP_FILE_PATH).self::$COOKIE_FILE)) {
+            fclose(fopen(realpath(projectConfig::$VERISURE_TMP_FILE_PATH).self::$COOKIE_FILE, "w"));
+        }
+        if (!file_exists(realpath(projectConfig::$VERISURE_TMP_FILE_PATH).self::$COOKIE_FILE) || !is_writable(realpath(projectConfig::$VERISURE_TMP_FILE_PATH).self::$COOKIE_FILE)) {
+            error_log("Cookie file is missing or not writable. Try to create it manually at ".realpath(projectConfig::$VERISURE_TMP_FILE_PATH).self::$COOKIE_FILE." and set chmod 777 on it");
+            exit;
+        }
         $this->initCurl();
     }
 
@@ -56,14 +65,14 @@ class verisure {
         curl_setopt($this->ch, CURLOPT_SSL_VERIFYHOST, 0);
         curl_setopt($this->ch, CURLOPT_SSL_VERIFYPEER, 0);
 
-        curl_setopt($this->ch, CURLOPT_COOKIEFILE, "verisure_cookiefile.txt");
-        curl_setopt($this->ch, CURLOPT_COOKIEJAR, "verisure_cookiefile.txt");
+        curl_setopt($this->ch, CURLOPT_COOKIEFILE, realpath(projectConfig::$VERISURE_TMP_FILE_PATH).self::$COOKIE_FILE);
+        curl_setopt($this->ch, CURLOPT_COOKIEJAR, realpath(projectConfig::$VERISURE_TMP_FILE_PATH).self::$COOKIE_FILE);
         
         curl_setopt($this->ch, CURLOPT_POST, 0);
 
         if ($this->debug) {
             curl_setopt($this->ch, CURLOPT_VERBOSE, 1);
-            $this->fh = fopen("verisure_curl_error.txt", 'w+');
+            $this->fh = fopen(realpath(projectConfig::$VERISURE_TMP_FILE_PATH).self::$CURL_ERROR_FILE, 'w+');
             curl_setopt($this->ch, CURLOPT_STDERR, $this->fh);
         }
     }

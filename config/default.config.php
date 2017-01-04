@@ -11,6 +11,7 @@ class projectConfig {
      * ==========================================================
      */
     public static $VERISURE_URL_BASE_PATH = "https://mypages.verisure.com/";
+    public static $VERISURE_TMP_FILE_PATH = "/tmp/";
     /**
      * Verisure Login credentials
      */
