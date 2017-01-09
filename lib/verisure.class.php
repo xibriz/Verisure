@@ -1,4 +1,5 @@
 <?php
+
 //Include all the other classes
 require_once './lib/verisureClima.class.php';
 require_once './lib/verisureLogon.class.php';
@@ -12,26 +13,32 @@ require_once './lib/verisureSmartPlug.class.php';
  * @author Ruben Andreassen (rubean85@gmail.com)
  */
 class verisure {
+
     public static $LOGIN_ACTION = "j_spring_security_check"; //Action on login FORM
     public static $LOGIN_INPUT_USERNAME = "j_username"; //NAME of username INPUT in login FORM
     public static $LOGIN_INPUT_PASSWORD = "j_password"; //NAME of passowrd INPUT in login FORM
-    
     private static $COOKIE_FILE = "verisure_cookiefile.txt", $CURL_ERROR_FILE = "verisure_curl_error.txt";
-        
+    public static $X_CSRF_TOKEN_FILE = "verisure_x_csrf_token.txt";
     public $ch = null;
-    private $debug = false, $fh = null;
+    private $debug = true, $fh = null;
 
     /**
      * Init cULR
      */
     public function __construct() {
         //Try to create file
-        if (!file_exists(realpath(projectConfig::$VERISURE_TMP_FILE_PATH).self::$COOKIE_FILE)) {
-            fclose(fopen(realpath(projectConfig::$VERISURE_TMP_FILE_PATH).self::$COOKIE_FILE, "w"));
+        if (!file_exists(realpath(projectConfig::$VERISURE_TMP_FILE_PATH) . DIRECTORY_SEPARATOR . self::$COOKIE_FILE)) {
+            fclose(fopen(realpath(projectConfig::$VERISURE_TMP_FILE_PATH) . DIRECTORY_SEPARATOR . self::$COOKIE_FILE, "w"));
         }
-        if (!file_exists(realpath(projectConfig::$VERISURE_TMP_FILE_PATH).self::$COOKIE_FILE) || !is_writable(realpath(projectConfig::$VERISURE_TMP_FILE_PATH).self::$COOKIE_FILE)) {
-            error_log("Cookie file is missing or not writable. Try to create it manually at ".realpath(projectConfig::$VERISURE_TMP_FILE_PATH).self::$COOKIE_FILE." and set chmod 777 on it");
+        if (!file_exists(realpath(projectConfig::$VERISURE_TMP_FILE_PATH) . DIRECTORY_SEPARATOR . self::$COOKIE_FILE) || !is_writable(realpath(projectConfig::$VERISURE_TMP_FILE_PATH) . DIRECTORY_SEPARATOR . self::$COOKIE_FILE)) {
+            error_log("Cookie file is missing or not writable. Try to create it manually at " . realpath(projectConfig::$VERISURE_TMP_FILE_PATH) . DIRECTORY_SEPARATOR . self::$COOKIE_FILE . " and set chmod 777 on it");
+            if (isset($_GET['debug'])) {
+                echo "Cookie file is missing or not writable. Try to create it manually at " . realpath(projectConfig::$VERISURE_TMP_FILE_PATH) . DIRECTORY_SEPARATOR . self::$COOKIE_FILE . " and set chmod 777 on it";
+            }
             exit;
+        }
+        if (isset($_GET['debug'])) {
+            echo "Cookie file location: " . realpath(projectConfig::$VERISURE_TMP_FILE_PATH) . DIRECTORY_SEPARATOR . self::$COOKIE_FILE;
         }
         $this->initCurl();
     }
@@ -65,18 +72,22 @@ class verisure {
         curl_setopt($this->ch, CURLOPT_SSL_VERIFYHOST, 0);
         curl_setopt($this->ch, CURLOPT_SSL_VERIFYPEER, 0);
 
-        curl_setopt($this->ch, CURLOPT_COOKIEFILE, realpath(projectConfig::$VERISURE_TMP_FILE_PATH).self::$COOKIE_FILE);
-        curl_setopt($this->ch, CURLOPT_COOKIEJAR, realpath(projectConfig::$VERISURE_TMP_FILE_PATH).self::$COOKIE_FILE);
-        
+        curl_setopt($this->ch, CURLOPT_COOKIEFILE, realpath(projectConfig::$VERISURE_TMP_FILE_PATH) . DIRECTORY_SEPARATOR . self::$COOKIE_FILE);
+        curl_setopt($this->ch, CURLOPT_COOKIEJAR, realpath(projectConfig::$VERISURE_TMP_FILE_PATH) . DIRECTORY_SEPARATOR . self::$COOKIE_FILE);
+
         curl_setopt($this->ch, CURLOPT_POST, 0);
 
         if ($this->debug) {
             curl_setopt($this->ch, CURLOPT_VERBOSE, 1);
-            $this->fh = fopen(realpath(projectConfig::$VERISURE_TMP_FILE_PATH).self::$CURL_ERROR_FILE, 'w+');
+            $this->fh = fopen(realpath(projectConfig::$VERISURE_TMP_FILE_PATH) . DIRECTORY_SEPARATOR . self::$CURL_ERROR_FILE, 'w+');
             curl_setopt($this->ch, CURLOPT_STDERR, $this->fh);
         }
     }
-    
+
+    public function addHeader($array) {
+        curl_setopt($this->ch, CURLOPT_HTTPHEADER, $array);
+    }
+
     /**
      * Generic function to execute a HTTP GET with a spesific URL
      * 
@@ -85,6 +96,44 @@ class verisure {
     public function urlGET($url) {
         curl_setopt($this->ch, CURLOPT_URL, $url);
         return curl_exec($this->ch);
+    }
+
+    /**
+     * Generig function to execute a HTTP POST with a spesific URL and key-value pair as POST parameters
+     * 
+     * @param string $url
+     * @param array $keyValueArray
+     * @param boolean $includeXCsrfToken
+     * @return string
+     */
+    public function urlPOST($url, $keyValueArray, $includeXCsrfToken = true) {
+        curl_setopt($this->ch, CURLOPT_URL, $url);
+        if ($includeXCsrfToken) {
+            if (file_exists(realpath(projectConfig::$VERISURE_TMP_FILE_PATH) . DIRECTORY_SEPARATOR . self::$X_CSRF_TOKEN_FILE)) {
+                $handle = fopen(realpath(projectConfig::$VERISURE_TMP_FILE_PATH) . DIRECTORY_SEPARATOR . self::$X_CSRF_TOKEN_FILE, 'r');
+                $token = fgets($handle);
+                fclose($handle);
+                //TODO: check length
+                $this->addHeader(array(
+                    'X-CSRF-TOKEN: '.$token,
+                ));
+            } else {
+                error_log("Could not locate X-CSRF-TOKEN-file at location " . realpath(projectConfig::$VERISURE_TMP_FILE_PATH) . DIRECTORY_SEPARATOR . self::$X_CSRF_TOKEN_FILE);
+            }
+        }
+
+        $encoded = '';
+        foreach ($keyValueArray as $key => $value) {
+            $encoded .= urlencode($key) . '=' . urlencode($value) . '&';
+        }
+
+        curl_setopt($this->ch, CURLOPT_POSTFIELDS, rtrim($encoded, '&'));
+        //var_dump(rtrim($encoded, '&')); exit;
+        curl_setopt($this->ch, CURLOPT_POST, 1);
+        $resultHTML = curl_exec($this->ch);
+        curl_setopt($this->ch, CURLOPT_POST, 0);
+
+        return $resultHTML;
     }
 
     /**
@@ -128,7 +177,7 @@ class verisure {
 
         return $formArray;
     }
-    
+
     /**
      * Returns a spesific FORM by an spesific ACTION string
      * 
@@ -146,7 +195,7 @@ class verisure {
         }
         return $formArray;
     }
-    
+
     /**
      * Converting date strings like "I dag" and "I går" to english for use in strtotime convertion
      * 

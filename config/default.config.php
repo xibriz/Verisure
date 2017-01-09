@@ -11,7 +11,7 @@ class projectConfig {
      * ==========================================================
      */
     public static $VERISURE_URL_BASE_PATH = "https://mypages.verisure.com/";
-    public static $VERISURE_TMP_FILE_PATH = "/tmp/";
+    public static $VERISURE_TMP_FILE_PATH = "/tmp";
     /**
      * Verisure Login credentials
      */
@@ -39,6 +39,14 @@ class projectConfig {
         //2 => ...
     );
     
+    /**
+     * Run verisureSmartPlug->getSmartPlugStatus() to find info to fill out here
+     */
+    public static $VERISURE_DEVICE_SMART_PLUG = array(
+        //0 => array("id" => "XXXX XXXX", "name" => "Smart Plug 1"),
+        //1 => array("id" => "XXXX XXXX", "name" => "Smart Plug 2"),
+        //2 => ...
+    );
 
     /**
      * EmonCMS

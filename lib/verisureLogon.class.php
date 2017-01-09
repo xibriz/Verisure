@@ -35,7 +35,14 @@ class verisureLogon extends verisure {
         $loginResultHTML = $this->postLoginForm($loginFormArray);
         //Verify the result
         $loginResultJSON = json_decode($loginResultHTML);
-        return (json_last_error() === JSON_ERROR_NONE && $loginResultJSON->status === 'ok');
+        if (json_last_error() === JSON_ERROR_NONE && $loginResultJSON->status === 'ok') { //Login OK
+            //Retrieve X-CSRF-TOKEN, Only needed to do POST-operations
+            $this->getXCsrfToken();
+            header('Location: '.'http://'.$_SERVER['HTTP_HOST'].$_SERVER['REQUEST_URI']);
+            exit;
+        } else {
+            return false;
+        }
     }
 
     /**
@@ -45,9 +52,9 @@ class verisureLogon extends verisure {
      */
     public function isLoggedIn() {
         //Try to get connection status of the alarm system
-        curl_setopt($this->ch, CURLOPT_URL, projectConfig::$VERISURE_URL_BASE_PATH . "overview/ethernetstatus");
-        //Retrieve result, and try do decode json
-        json_decode(curl_exec($this->ch));
+        $result = $this->urlGET(projectConfig::$VERISURE_URL_BASE_PATH . "overview/ethernetstatus");
+        //Ttry do decode json
+        json_decode($result);
 
         //If no errors, then we are logged in
         return (json_last_error() === JSON_ERROR_NONE);
@@ -59,8 +66,7 @@ class verisureLogon extends verisure {
      * @return HTML
      */
     private function getLoginPageHTML() {
-        curl_setopt($this->ch, CURLOPT_URL, projectConfig::$VERISURE_URL_BASE_PATH . "no/login.html");
-        return curl_exec($this->ch);
+        return $this->urlGET(projectConfig::$VERISURE_URL_BASE_PATH . "no/login.html");
     }
 
     /**
@@ -70,25 +76,27 @@ class verisureLogon extends verisure {
      * @return HTML
      */
     private function postLoginForm($formArray) {
-        curl_setopt($this->ch, CURLOPT_URL, projectConfig::$VERISURE_URL_BASE_PATH . $formArray['action']);
-        
-        $encoded = '';
-        foreach ($formArray['keyValueArray'] as $name => $value) {
+        //Insert username and password
+        foreach ($formArray['keyValueArray'] as $name => &$value) {
             if (strstr($name, verisure::$LOGIN_INPUT_USERNAME)) {
                 $value = projectConfig::$VERISURE_USERNAME;
             }
             if (strstr($name, verisure::$LOGIN_INPUT_PASSWORD)) {
                 $value = projectConfig::$VERISURE_PASSWORD;
             }
-            $encoded .= urlencode($name) . '=' . urlencode($value) . '&';
         }
-        curl_setopt($this->ch, CURLOPT_POSTFIELDS, rtrim($encoded, "&"));
         
-        curl_setopt($this->ch, CURLOPT_POST, 1);
-        $resultHTML = curl_exec($this->ch);
-        curl_setopt($this->ch, CURLOPT_POST, 0);
-        
-        return $resultHTML;
+        return $this->urlPOST(projectConfig::$VERISURE_URL_BASE_PATH . $formArray['action'], $formArray['keyValueArray'], false);
+    }
+    
+    private function getXCsrfToken() {
+        $result = $this->urlGET(projectConfig::$VERISURE_URL_BASE_PATH."no/start.html");
+        $matches = array();
+        if (preg_match('/(\'X-CSRF-TOKEN\').*?((?:[a-z][a-z0-9_]*)).*?/is', $result, $matches)) {
+            $handle = fopen(realpath(projectConfig::$VERISURE_TMP_FILE_PATH).DIRECTORY_SEPARATOR.self::$X_CSRF_TOKEN_FILE, 'w');
+            fwrite($handle, $matches[2]);
+            fclose($handle);            
+        }
     }
 
 }
