@@ -26,6 +26,9 @@ class verisure {
      * Init cULR
      */
     public function __construct() {
+        if (isset($_GET['retryCount'])) {
+            sleep(30); //TODO: Find out why it takes so long to use the active session after first login
+        }
         //Try to create file
         if (!file_exists(realpath(projectConfig::$VERISURE_TMP_FILE_PATH) . DIRECTORY_SEPARATOR . self::$COOKIE_FILE)) {
             fclose(fopen(realpath(projectConfig::$VERISURE_TMP_FILE_PATH) . DIRECTORY_SEPARATOR . self::$COOKIE_FILE, "w"));
@@ -109,13 +112,18 @@ class verisure {
     public function urlPOST($url, $keyValueArray, $includeXCsrfToken = true) {
         curl_setopt($this->ch, CURLOPT_URL, $url);
         if ($includeXCsrfToken) {
-            if (file_exists(realpath(projectConfig::$VERISURE_TMP_FILE_PATH) . DIRECTORY_SEPARATOR . self::$X_CSRF_TOKEN_FILE)) {
+            if (isset($_GET['xCsrfToken'])) {
+                //TODO: check length
+                $this->addHeader(array(
+                    'X-CSRF-TOKEN: ' . filter_input(INPUT_GET, 'xCsrfToken'),
+                ));
+            } else if (file_exists(realpath(projectConfig::$VERISURE_TMP_FILE_PATH) . DIRECTORY_SEPARATOR . self::$X_CSRF_TOKEN_FILE)) {
                 $handle = fopen(realpath(projectConfig::$VERISURE_TMP_FILE_PATH) . DIRECTORY_SEPARATOR . self::$X_CSRF_TOKEN_FILE, 'r');
                 $token = fgets($handle);
                 fclose($handle);
                 //TODO: check length
                 $this->addHeader(array(
-                    'X-CSRF-TOKEN: '.$token,
+                    'X-CSRF-TOKEN: ' . $token,
                 ));
             } else {
                 error_log("Could not locate X-CSRF-TOKEN-file at location " . realpath(projectConfig::$VERISURE_TMP_FILE_PATH) . DIRECTORY_SEPARATOR . self::$X_CSRF_TOKEN_FILE);

@@ -20,6 +20,9 @@ class verisureLogon extends verisure {
         //Check if we are already logged in
         if ($this->isLoggedIn()) {
             return true;
+        } else if (isset($_GET['retryCount'])) {
+            error_log("Fatal error. Possible logon loop");
+            exit;
         }
         //Continue with the login process
         $loginPageHTML = $this->getLoginPageHTML();
@@ -37,8 +40,10 @@ class verisureLogon extends verisure {
         $loginResultJSON = json_decode($loginResultHTML);
         if (json_last_error() === JSON_ERROR_NONE && $loginResultJSON->status === 'ok') { //Login OK
             //Retrieve X-CSRF-TOKEN, Only needed to do POST-operations
-            $this->getXCsrfToken();
-            header('Location: '.'http://'.$_SERVER['HTTP_HOST'].$_SERVER['REQUEST_URI']);
+            $token = $this->getXCsrfToken();
+            
+            $separator = (strstr($_SERVER['REQUEST_URI'], "?") !== false) ? "&" : "?";
+            header('Location: '.'http://'.$_SERVER['HTTP_HOST'].$_SERVER['REQUEST_URI'].$separator.'xCsrfToken='.$token.'&retryCount=1');
             exit;
         } else {
             return false;
@@ -89,14 +94,21 @@ class verisureLogon extends verisure {
         return $this->urlPOST(projectConfig::$VERISURE_URL_BASE_PATH . $formArray['action'], $formArray['keyValueArray'], false);
     }
     
+    /**
+     * Retrieve Mypages and parse the HTML to get the X-CSRF-TOKEN
+     * 
+     * @return string
+     */
     private function getXCsrfToken() {
         $result = $this->urlGET(projectConfig::$VERISURE_URL_BASE_PATH."no/start.html");
         $matches = array();
-        if (preg_match('/(\'X-CSRF-TOKEN\').*?((?:[a-z][a-z0-9_]*)).*?/is', $result, $matches)) {
+        if (preg_match('/(\'X-CSRF-TOKEN\').*?((?:[a-z][a-z0-9_]*)).*?/is', $result, $matches)) {            
             $handle = fopen(realpath(projectConfig::$VERISURE_TMP_FILE_PATH).DIRECTORY_SEPARATOR.self::$X_CSRF_TOKEN_FILE, 'w');
             fwrite($handle, $matches[2]);
             fclose($handle);            
         }
+        
+        return (isset($matches[2])) ? $matches[2] : '';
     }
 
 }
