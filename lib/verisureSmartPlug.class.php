@@ -8,6 +8,7 @@ class verisureSmartPlug extends verisure {
     
     private static $STATUS_ON = "on";
     private static $STATUS_OFF = "off";
+    private static $STATUS_UPDATING = "updating";
     
     public function __construct() {
         parent::__construct();
@@ -51,7 +52,12 @@ class verisureSmartPlug extends verisure {
             if ($obj->deviceLabel !== $id) {
                 continue;
             }
-            $result = ($obj->status === self::$STATUS_ON);
+            if ($obj->status === self::$STATUS_UPDATING) { //If updating, retry
+                sleep(3);
+                $result = $this->isSmartPlugOn($id);
+            } else {
+                $result = ($obj->status === self::$STATUS_ON);
+            }            
             break;
         }
         return $result;
