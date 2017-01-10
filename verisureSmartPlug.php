@@ -31,6 +31,7 @@ switch (filter_input(INPUT_GET, 'task')) {
             echo "ON<br>";
             echo $result;
         }
+        sleep(3);
         echo ($verisureSmartPlugObj->isSmartPlugOn(filter_input(INPUT_GET, 'id')) === true) ? 'on' : 'off';
         break;
     case 'off':
@@ -39,6 +40,7 @@ switch (filter_input(INPUT_GET, 'task')) {
             echo "OFF<br>";
             echo $result;
         }
+        sleep(3);
         echo ($verisureSmartPlugObj->isSmartPlugOn(filter_input(INPUT_GET, 'id')) === true) ? 'on' : 'off';
         break;
     case 'status':
