@@ -41,9 +41,9 @@ class verisureLogon extends verisure {
         if (json_last_error() === JSON_ERROR_NONE && $loginResultJSON->status === 'ok') { //Login OK
             //Retrieve X-CSRF-TOKEN, Only needed to do POST-operations
             $token = $this->getXCsrfToken();
-            
+
             $separator = (strstr($_SERVER['REQUEST_URI'], "?") !== false) ? "&" : "?";
-            header('Location: '.'http://'.$_SERVER['HTTP_HOST'].$_SERVER['REQUEST_URI'].$separator.'xCsrfToken='.$token.'&retryCount=1');
+            header('Location: ' . 'http://' . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'] . $separator . 'xCsrfToken=' . $token . '&retryCount=1');
             exit;
         } else {
             return false;
@@ -71,7 +71,7 @@ class verisureLogon extends verisure {
      * @return HTML
      */
     private function getLoginPageHTML() {
-        return $this->urlGET(projectConfig::$VERISURE_URL_BASE_PATH . "no/login.html");
+        return $this->urlGET(projectConfig::$VERISURE_URL_BASE_PATH . projectConfig::$VERISURE_LOCAL . "/login.html");
     }
 
     /**
@@ -90,24 +90,24 @@ class verisureLogon extends verisure {
                 $value = projectConfig::$VERISURE_PASSWORD;
             }
         }
-        
+
         return $this->urlPOST(projectConfig::$VERISURE_URL_BASE_PATH . $formArray['action'], $formArray['keyValueArray'], false);
     }
-    
+
     /**
      * Retrieve Mypages and parse the HTML to get the X-CSRF-TOKEN
      * 
      * @return string
      */
     private function getXCsrfToken() {
-        $result = $this->urlGET(projectConfig::$VERISURE_URL_BASE_PATH."no/start.html");
+        $result = $this->urlGET(projectConfig::$VERISURE_URL_BASE_PATH . projectConfig::$VERISURE_LOCAL . "/start.html");
         $matches = array();
-        if (preg_match('/(\'X-CSRF-TOKEN\').*?((?:[a-z][a-z0-9_]*)).*?/is', $result, $matches)) {            
-            $handle = fopen(realpath(projectConfig::$VERISURE_TMP_FILE_PATH).DIRECTORY_SEPARATOR.self::$X_CSRF_TOKEN_FILE, 'w');
+        if (preg_match('/(\'X-CSRF-TOKEN\').*?((?:[a-z][a-z0-9_]*)).*?/is', $result, $matches)) {
+            $handle = fopen(realpath(projectConfig::$VERISURE_TMP_FILE_PATH) . DIRECTORY_SEPARATOR . self::$X_CSRF_TOKEN_FILE, 'w');
             fwrite($handle, $matches[2]);
-            fclose($handle);            
+            fclose($handle);
         }
-        
+
         return (isset($matches[2])) ? $matches[2] : '';
     }
 

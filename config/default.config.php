@@ -15,6 +15,7 @@ class projectConfig {
     /**
      * Verisure Login credentials
      */
+    public static $VERISURE_LOCAL = "no"; //Possible values: se, no, fi, fr, dk, frbe, nlbe, nl, uk
     public static $VERISURE_USERNAME = "your@mail.com";
     public static $VERISURE_PASSWORD = "XXXX";
 
