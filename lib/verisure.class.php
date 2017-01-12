@@ -1,11 +1,4 @@
 <?php
-
-//Include all the other classes
-require_once './lib/verisureClima.class.php';
-require_once './lib/verisureLogon.class.php';
-require_once './lib/verisureRemoteControl.class.php';
-require_once './lib/verisureSmartPlug.class.php';
-
 /**
  * Base class for Verisure kommunication.
  * Sets up cULR and handles requests
@@ -26,22 +19,22 @@ class verisure {
      * Init cULR
      */
     public function __construct() {
-        if (isset($_GET['retryCount'])) {
-            sleep(30); //TODO: Find out why it takes so long to use the active session after first login
-        }
+//        if (isset($_GET['retryCount'])) {
+//            sleep(30); //TODO: Find out why it takes so long to use the active session after first login
+//        }
         //Try to create file
-        if (!file_exists(realpath(projectConfig::$VERISURE_TMP_FILE_PATH) . DIRECTORY_SEPARATOR . self::$COOKIE_FILE)) {
-            fclose(fopen(realpath(projectConfig::$VERISURE_TMP_FILE_PATH) . DIRECTORY_SEPARATOR . self::$COOKIE_FILE, "w"));
+        if (!file_exists(realpath(verisureConfig::$VERISURE_TMP_FILE_PATH) . DIRECTORY_SEPARATOR . self::$COOKIE_FILE)) {
+            fclose(fopen(realpath(verisureConfig::$VERISURE_TMP_FILE_PATH) . DIRECTORY_SEPARATOR . self::$COOKIE_FILE, "w"));
         }
-        if (!file_exists(realpath(projectConfig::$VERISURE_TMP_FILE_PATH) . DIRECTORY_SEPARATOR . self::$COOKIE_FILE) || !is_writable(realpath(projectConfig::$VERISURE_TMP_FILE_PATH) . DIRECTORY_SEPARATOR . self::$COOKIE_FILE)) {
-            error_log("Cookie file is missing or not writable. Try to create it manually at " . realpath(projectConfig::$VERISURE_TMP_FILE_PATH) . DIRECTORY_SEPARATOR . self::$COOKIE_FILE . " and set chmod 777 on it");
+        if (!file_exists(realpath(verisureConfig::$VERISURE_TMP_FILE_PATH) . DIRECTORY_SEPARATOR . self::$COOKIE_FILE) || !is_writable(realpath(verisureConfig::$VERISURE_TMP_FILE_PATH) . DIRECTORY_SEPARATOR . self::$COOKIE_FILE)) {
+            error_log("Cookie file is missing or not writable. Try to create it manually at " . realpath(verisureConfig::$VERISURE_TMP_FILE_PATH) . DIRECTORY_SEPARATOR . self::$COOKIE_FILE . " and set chmod 777 on it");
             if (isset($_GET['debug'])) {
-                echo "Cookie file is missing or not writable. Try to create it manually at " . realpath(projectConfig::$VERISURE_TMP_FILE_PATH) . DIRECTORY_SEPARATOR . self::$COOKIE_FILE . " and set chmod 777 on it";
+                echo "Cookie file is missing or not writable. Try to create it manually at " . realpath(verisureConfig::$VERISURE_TMP_FILE_PATH) . DIRECTORY_SEPARATOR . self::$COOKIE_FILE . " and set chmod 777 on it";
             }
             exit;
         }
         if (isset($_GET['debug'])) {
-            echo "Cookie file location: " . realpath(projectConfig::$VERISURE_TMP_FILE_PATH) . DIRECTORY_SEPARATOR . self::$COOKIE_FILE;
+            echo "Cookie file location: " . realpath(verisureConfig::$VERISURE_TMP_FILE_PATH) . DIRECTORY_SEPARATOR . self::$COOKIE_FILE;
         }
         $this->initCurl();
     }
@@ -70,19 +63,20 @@ class verisure {
 
         curl_setopt($this->ch, CURLOPT_RETURNTRANSFER, 1);
         curl_setopt($this->ch, CURLOPT_FOLLOWLOCATION, 1);
-        curl_setopt($this->ch, CURLOPT_USERAGENT, "Mozilla/5.0 (Windows; U; Windows NT 5.0; en-US; rv:1.4) Gecko/20030624 Netscape/7.1 (ax)");
+        curl_setopt($this->ch, CURLOPT_USERAGENT, "Mozilla/5.0 (X11; Linux x86_64; rv:10.0) Gecko/20100101 Firefox/50.0");
+        curl_setopt($this->ch, CURLOPT_REFERER, verisureConfig::$VERISURE_URL_BASE_PATH.verisureConfig::$VERISURE_LOCAL."/start.html");
 
         curl_setopt($this->ch, CURLOPT_SSL_VERIFYHOST, 0);
         curl_setopt($this->ch, CURLOPT_SSL_VERIFYPEER, 0);
 
-        curl_setopt($this->ch, CURLOPT_COOKIEFILE, realpath(projectConfig::$VERISURE_TMP_FILE_PATH) . DIRECTORY_SEPARATOR . self::$COOKIE_FILE);
-        curl_setopt($this->ch, CURLOPT_COOKIEJAR, realpath(projectConfig::$VERISURE_TMP_FILE_PATH) . DIRECTORY_SEPARATOR . self::$COOKIE_FILE);
+        curl_setopt($this->ch, CURLOPT_COOKIEFILE, realpath(verisureConfig::$VERISURE_TMP_FILE_PATH) . DIRECTORY_SEPARATOR . self::$COOKIE_FILE);
+        curl_setopt($this->ch, CURLOPT_COOKIEJAR, realpath(verisureConfig::$VERISURE_TMP_FILE_PATH) . DIRECTORY_SEPARATOR . self::$COOKIE_FILE);
 
         curl_setopt($this->ch, CURLOPT_POST, 0);
 
         if ($this->debug) {
             curl_setopt($this->ch, CURLOPT_VERBOSE, 1);
-            $this->fh = fopen(realpath(projectConfig::$VERISURE_TMP_FILE_PATH) . DIRECTORY_SEPARATOR . self::$CURL_ERROR_FILE, 'w+');
+            $this->fh = fopen(realpath(verisureConfig::$VERISURE_TMP_FILE_PATH) . DIRECTORY_SEPARATOR . self::$CURL_ERROR_FILE, 'w+');
             curl_setopt($this->ch, CURLOPT_STDERR, $this->fh);
         }
     }
@@ -117,8 +111,8 @@ class verisure {
                 $this->addHeader(array(
                     'X-CSRF-TOKEN: ' . filter_input(INPUT_GET, 'xCsrfToken'),
                 ));
-            } else if (file_exists(realpath(projectConfig::$VERISURE_TMP_FILE_PATH) . DIRECTORY_SEPARATOR . self::$X_CSRF_TOKEN_FILE)) {
-                $handle = fopen(realpath(projectConfig::$VERISURE_TMP_FILE_PATH) . DIRECTORY_SEPARATOR . self::$X_CSRF_TOKEN_FILE, 'r');
+            } else if (file_exists(realpath(verisureConfig::$VERISURE_TMP_FILE_PATH) . DIRECTORY_SEPARATOR . self::$X_CSRF_TOKEN_FILE)) {
+                $handle = fopen(realpath(verisureConfig::$VERISURE_TMP_FILE_PATH) . DIRECTORY_SEPARATOR . self::$X_CSRF_TOKEN_FILE, 'r');
                 $token = fgets($handle);
                 fclose($handle);
                 //TODO: check length
@@ -126,7 +120,7 @@ class verisure {
                     'X-CSRF-TOKEN: ' . $token,
                 ));
             } else {
-                error_log("Could not locate X-CSRF-TOKEN-file at location " . realpath(projectConfig::$VERISURE_TMP_FILE_PATH) . DIRECTORY_SEPARATOR . self::$X_CSRF_TOKEN_FILE);
+                error_log("Could not locate X-CSRF-TOKEN-file at location " . realpath(verisureConfig::$VERISURE_TMP_FILE_PATH) . DIRECTORY_SEPARATOR . self::$X_CSRF_TOKEN_FILE);
             }
         }
 
@@ -205,18 +199,36 @@ class verisure {
     }
 
     /**
-     * Converting date strings like "I dag" and "I går" to english for use in strtotime convertion
+     * Converting date strings to timestamp
      * 
      * @param string $dateStr
      * @return string
      */
-    public function convertDateStringNO($dateStr) {
-        if (mb_strstr($dateStr, "dag") !== false) {
-            return str_replace("I dag", "Today", $dateStr);
-        } else if (mb_strstr($dateStr, "går") !== false) {
-            return str_replace("I dag", "Yesterday", $dateStr);
-        } else {
-            return $dateStr;
+    public function convertDateStringToTimestamp($dateStr) {
+        if (verisureConfig::$VERISURE_LOCAL === 'no') {
+            return $this->convertDateStringToTimestampNO($dateStr);
+        } else { //TODO: Add other languages
+            error_log("Could not convert date string to timestamp because the current local (".verisureConfig::$VERISURE_LOCAL.") does not have a suitable function. Using time()!");
+            return time();
+        }
+    }
+    
+    /**
+     * Converting date strings in Norwegian to timestamp.
+     * ("I dag" and "I går")
+     * 
+     * @param string $dateStr
+     * @return string
+     */
+    private function convertDateStringToTimestampNO($dateStr) {
+        if (mb_strstr($dateStr, "dag") !== false) { //Example: I dag 05:11
+            return strtotime(str_replace("I dag", "Today", $dateStr));
+        } else if (mb_strstr($dateStr, "går") !== false) { //Example: I går 05:11
+            return strtotime(str_replace("I dag", "Yesterday", $dateStr));
+        } else { //Example: 02.01.17 11:41
+            list($date, $time) = explode(" ", $dateStr);
+            list($day, $month, $year) = explode(".", $date);
+            return strtotime($year."-".$month."-".$day." ".$time);
         }
     }
 

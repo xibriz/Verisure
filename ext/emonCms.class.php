@@ -27,7 +27,7 @@ class emonCms extends verisureClima {
         }
         foreach ($climaArray as $sensorObj) {
             foreach ($sensorObj->samples as $statusObj) {
-                $this->logValue($this->buildUrl(substr($statusObj->timestamp, 0, 10), str_replace(" ", "_", $sensorObj->serial), $sensorObj->climateSensorType, $statusObj->value));
+                $this->logValue($this->buildUrl($statusObj->timestamp, $sensorObj->serial, $sensorObj->climateSensorType, $statusObj->value));
             }
         }
         return true;
@@ -45,12 +45,11 @@ class emonCms extends verisureClima {
             return false;
         }
         foreach ($climaArray as $obj) {
-            $timestamp = strtotime($this->convertDateStringNO($obj->timestamp));
             if (strlen($obj->humidity) > 0) {
-                $this->logValue($this->buildUrl($timestamp, str_replace(" ", "_", $obj->id), "humidity", str_replace(",", ".", rtrim($obj->humidity, "%"))));
+                $this->logValue($this->buildUrl($obj->timestamp, $obj->id, "humidity", str_replace(",", ".", rtrim($obj->humidity, "%"))));
             }
             if (strlen($obj->temperature) > 0) {
-                $this->logValue($this->buildUrl($timestamp, str_replace(" ", "_", $obj->id), "temperature", str_replace("&#176;", "", str_replace(",", ".", $obj->temperature))));
+                $this->logValue($this->buildUrl($obj->timestamp, $obj->id, "temperature", str_replace("&#176;", "", str_replace(",", ".", $obj->temperature))));
             }
         }
         return true;
@@ -69,7 +68,7 @@ class emonCms extends verisureClima {
         }
         foreach ($climaArray as $sensorObj) {
             $statusObj = array_pop($sensorObj->samples);
-            $this->logValue($this->buildUrl(substr($statusObj->timestamp, 0, 10), str_replace(" ", "_", $sensorObj->serial), $sensorObj->climateSensorType, $statusObj->value));
+            $this->logValue($this->buildUrl($statusObj->timestamp, $sensorObj->serial, $sensorObj->climateSensorType, $statusObj->value));
         }
         return true;
     }
@@ -102,7 +101,7 @@ class emonCms extends verisureClima {
      * @return string
      */
     private function buildUrl($timestamp, $id, $type, $value) {
-        return projectConfig::$EMONCMS_URL_BASE_PATH . projectConfig::$EMONCMS_URL_API_WITH_KEY . "&time=" . $timestamp . "&node=" . $id . "&json={%22" . $type . "%22:%22" . $value . "%22}";
+        return emoncmsConfig::$EMONCMS_URL_BASE_PATH . emoncmsConfig::$EMONCMS_URL_API_WITH_KEY . "&time=" . substr($timestamp, 0, 10) . "&node=" . str_replace(" ", "_", $id) . "&json={%22" . $type . "%22:%22" . $value . "%22}";
     }
 
     /**

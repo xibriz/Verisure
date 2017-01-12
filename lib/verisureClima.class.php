@@ -22,11 +22,11 @@ class verisureClima extends verisure {
      * @return array/false
      */
     public function getClimaStatus() {
-        curl_setopt($this->ch, CURLOPT_URL, projectConfig::$VERISURE_URL_BASE_PATH . "overview/climatedevice");
+        curl_setopt($this->ch, CURLOPT_URL, verisureConfig::$VERISURE_URL_BASE_PATH . "overview/climatedevice");
         $result = curl_exec($this->ch);
 
         $resultJSON = json_decode($result);
-        return (json_last_error() === JSON_ERROR_NONE) ? $resultJSON : false;
+        return (json_last_error() === JSON_ERROR_NONE) ? $this->editTimestampOnObject($resultJSON) : false;
     }
 
     /**
@@ -37,20 +37,20 @@ class verisureClima extends verisure {
     public function getClimaGraphValues() {
         $offset = 0;
         $lenght = self::$MAX_DEVICES_IN_GRAPH_REQUEST;
-        $devicesSnArrayLength = count(projectConfig::$VERISURE_DEVICE_CLIMA);
+        $devicesSnArrayLength = count(verisureConfig::$VERISURE_DEVICE_CLIMA);
 
         if (($offset + $lenght) > $devicesSnArrayLength) {
             $lenght = abs($devicesSnArrayLength - $offset - $lenght);
         }
 
-        $climaResult = json_decode($this->getClimaValues(array_slice(projectConfig::$VERISURE_DEVICE_CLIMA, $offset, $lenght)));
+        $climaResult = json_decode($this->getClimaValues(array_slice(verisureConfig::$VERISURE_DEVICE_CLIMA, $offset, $lenght)));
         if (json_last_error() === JSON_ERROR_NONE) {
             $offset += $lenght;
             while ($offset < $devicesSnArrayLength) {
                 if (($offset + $lenght) > $devicesSnArrayLength) {
                     $lenght = abs($devicesSnArrayLength - $offset - $lenght);
                 }
-                $climaResultTmp = json_decode($this->getClimaValues(array_slice(projectConfig::$VERISURE_DEVICE_CLIMA, $offset, $lenght)));
+                $climaResultTmp = json_decode($this->getClimaValues(array_slice(verisureConfig::$VERISURE_DEVICE_CLIMA, $offset, $lenght)));
                 if (json_last_error() === JSON_ERROR_NONE) {
                     $climaResult = array_merge($climaResult, $climaResultTmp);
                 }
@@ -78,8 +78,21 @@ class verisureClima extends verisure {
             $url .= "deviceLabels[]=" . urlencode($array['id']) . "&";
         }
 
-        curl_setopt($this->ch, CURLOPT_URL, projectConfig::$VERISURE_URL_BASE_PATH . rtrim($url, "&"));
+        curl_setopt($this->ch, CURLOPT_URL, verisureConfig::$VERISURE_URL_BASE_PATH . rtrim($url, "&"));
         return curl_exec($this->ch);
+    }
+    
+    /**
+     * Edit the timestamp value
+     * 
+     * @param array $resultJSON
+     * @return array
+     */
+    private function editTimestampOnObject($resultJSON) {
+        foreach ($resultJSON as &$obj) {
+            $obj->timestamp = $this->convertDateStringToTimestamp($obj->timestamp);
+        }
+        return $resultJSON;
     }
 
 }

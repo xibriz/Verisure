@@ -1,54 +1,43 @@
 <?php
 //Include config
+//require_once './config/default.config.php';
 require_once './config/ruben.config.php';
-//Include Library
-require_once './lib/verisure.class.php';
-//Include Library Extension
-require_once './ext/iRobot.class.php';
-
-$debug = isset($_GET['debug']);
 
 $verisureLogonObj = new verisureLogon();
 if ($verisureLogonObj->runLogon()) {
-    if ($debug) {
-        echo 'Logon OK';
-    }
-    sleep(2); //Wait a little
+    echo "LOGON OK<br><br>";
 } else {
-    if ($debug) {
-        echo 'Could not log in to the Verisure Portal';
-    }
-    error_log("Could not log in to the Verisure Portal");
+    echo "Could not log in! Check the error log.<br><br>";
+}
+if ($verisureLogonObj->isLoggedIn()) {
+    echo "You are logged in<br><br>";
+} else {
+    echo "You are NOT logged in. Check the error log. Aborting script...<br><br>";
     exit;
 }
 
+/**
+ * Remote Control
+ */
 $verisureRemoteControlObj = new verisureRemoteControl();
-//If alarm not of = alarm is on
-$alarmStatus = $verisureRemoteControlObj->isAlarmOff();
-if ($alarmStatus === false) {
-    if ($debug) {
-        echo 'Alarm is On.. Starting Roomba';
-    }
-    //Start the iRobot Roomba
-    $iRobotObj = new iRobot();
-    $iRobotObj->start();
-    
-    //Turn the light off
-    //TODO
-} 
-//Alarm is off
-else if ($alarmStatus === true) {
-    if ($debug) {
-        echo 'Alarm is Off.. Docking Roomba';
-    }
-    //Dock the iRobot Roomba
-    $iRobotObj = new iRobot();
-    $iRobotObj->dock();
-    
-    //Turn the light on
-    //TODO
+if ($verisureRemoteControlObj->isAlarmOff()) {
+    echo "Alarm is OFF<br><br>";
 } else {
-    if ($debug) {
-        echo 'Unknown Alarm Status';
-    }
+    echo "Alarm is ON or we don't know.<br><br>";
 }
+echo 'Remote status:<br>';
+var_dump($verisureRemoteControlObj->getRemoteStatus());
+
+/**
+ * Clima
+ */
+$verisureClimaObj = new verisureClima();
+echo 'Clima status:<br>';
+var_dump($verisureClimaObj->getClimaStatus());
+
+/**
+ * Smart Plug
+ */
+$verisureSmartPlugObj = new verisureSmartPlug();
+echo 'Smart Plug status:<br>';
+var_dump($verisureSmartPlugObj->getSmartPlugStatus());

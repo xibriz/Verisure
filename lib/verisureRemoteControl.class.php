@@ -27,11 +27,11 @@ class verisureRemoteControl extends verisure{
      * @return stdClass/false
      */
     public function getRemoteStatus() {
-        curl_setopt($this->ch, CURLOPT_URL, projectConfig::$VERISURE_URL_BASE_PATH."remotecontrol");
+        curl_setopt($this->ch, CURLOPT_URL, verisureConfig::$VERISURE_URL_BASE_PATH."remotecontrol");
         $result = curl_exec($this->ch);
         
         $resultJSON = json_decode($result);
-        return (json_last_error() === JSON_ERROR_NONE) ? $resultJSON : false;
+        return (json_last_error() === JSON_ERROR_NONE) ? $this->addTimestampToObject($resultJSON) : false;
     }
     
     /**
@@ -44,7 +44,7 @@ class verisureRemoteControl extends verisure{
      * @param string $id
      * @return boolean/null
      */
-    function isDoorLocked($id) {
+    public function isDoorLocked($id) {
         $statusObj = $this->getRemoteStatus();
         if ($statusObj === false) {
             return null;
@@ -69,19 +69,32 @@ class verisureRemoteControl extends verisure{
      * 
      * @return boolean/null
      */
-    function isAlarmOff() {
+    public function isAlarmOff() {
         $statusObj = $this->getRemoteStatus();
         if ($statusObj === false) {
             return null;
         }
         $isAlarmOff = null;
         foreach ($statusObj as $obj) {
-            if ($obj->id !== projectConfig::$VERISURE_ALARM_ID) {
+            if ($obj->id !== verisureConfig::$VERISURE_ALARM_ID) {
                 continue;
             }
             $isAlarmOff = ($obj->status === self::$STATUS_ALARM_STATE_UNARMED) ? true : false;
             break;
         }
         return $isAlarmOff;
+    }
+    
+    /**
+     * Add timestamp to object
+     * 
+     * @param array $resultJSON
+     * @return array
+     */
+    private function addTimestampToObject($resultJSON) {
+        foreach ($resultJSON as &$obj) {
+            $obj->timestamp = date("Y-m-d H:i:s", $this->convertDateStringToTimestamp($obj->date));
+        }
+        return $resultJSON;
     }
 }

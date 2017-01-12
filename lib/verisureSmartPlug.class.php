@@ -1,32 +1,46 @@
 <?php
+
 /**
  * Class to handle Smart Plug devices
  *
  * @author Ruben Andreassen (rubean85@gmail.com)
  */
 class verisureSmartPlug extends verisure {
-    
+
     private static $STATUS_ON = "on";
     private static $STATUS_OFF = "off";
     private static $STATUS_UPDATING = "updating";
-    
+
+    /**
+     * Constructor
+     */
     public function __construct() {
         parent::__construct();
+        //Needed to do POST
+        $this->addHeader(array(
+            'Accept: application/json, text/javascript, */*; q=0.01',
+            'Accept-Language: nb-NO,nb;q=0.9,no-NO;q=0.8,no;q=0.6,nn-NO;q=0.5,nn;q=0.4,en-US;q=0.3,en;q=0.1',
+            'Accept-Encoding: gzip, deflate, br',
+            'Content-Type: application/x-www-form-urlencoded; charset=UTF-8',
+            'X-Requested-With: XMLHttpRequest',
+            'Connection: keep-alive',
+            'Cookie=s_lastvisit=' . (time() - 120) . '' . rand(100, 999) . '; s_cc=true; nrvisitevar=Repeat; nrvisitprop=Repeat; s_invisit=true; s_sq=%5B%5BB%5D%5D',
+        ));
     }
-    
+
     /**
      * Retrieve the status of the alarm and locks
      * 
      * @return stdClass/false
      */
     public function getSmartPlugStatus() {
-        curl_setopt($this->ch, CURLOPT_URL, projectConfig::$VERISURE_URL_BASE_PATH."settings/smartplug");
+        curl_setopt($this->ch, CURLOPT_URL, verisureConfig::$VERISURE_URL_BASE_PATH . "settings/smartplug");
         $result = curl_exec($this->ch);
-        
+
         $resultJSON = json_decode($result);
         return (json_last_error() === JSON_ERROR_NONE) ? $resultJSON : false;
     }
-    
+
     /**
      * Return the status of a spesific Smart Plug
      * 
@@ -57,12 +71,12 @@ class verisureSmartPlug extends verisure {
                 $result = $this->isSmartPlugOn($id);
             } else {
                 $result = ($obj->status === self::$STATUS_ON);
-            }            
+            }
             break;
         }
         return $result;
     }
-    
+
     /**
      * Turn a spesific Smart Plug ON
      * 
@@ -70,31 +84,32 @@ class verisureSmartPlug extends verisure {
      * @return string
      */
     public function turnOn($id) {
-        $url = projectConfig::$VERISURE_URL_BASE_PATH . "smartplugs/onoffplug.cmd";
+        $url = verisureConfig::$VERISURE_URL_BASE_PATH . "smartplugs/onoffplug.cmd";
         $paramsArray = array(
-            "targetDeviceLabel" => str_replace(" ", "+", $id),
+            "targetDeviceLabel" => $id,
             "targetOn" => self::$STATUS_ON
         );
-        
+
         return $this->urlPOST($url, $paramsArray);
     }
-    
+
     /**
      * Turn a spesific Smart Plug OFF
      * 
      * @return string
      */
     public function turnOff($id) {
-        $url = projectConfig::$VERISURE_URL_BASE_PATH . "smartplugs/onoffplug.cmd";
+        $url = verisureConfig::$VERISURE_URL_BASE_PATH . "smartplugs/onoffplug.cmd";
         $paramsArray = array(
-            "targetDeviceLabel" => str_replace(" ", "+", $id),
+            "targetDeviceLabel" => $id,
             "targetOn" => self::$STATUS_OFF
         );
         if (isset($_GET['debug'])) {
             echo $url;
             var_dump($paramsArray);
         }
-        
+
         return $this->urlPOST($url, $paramsArray);
     }
+
 }

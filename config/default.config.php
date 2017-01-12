@@ -1,11 +1,33 @@
 <?php
+/**
+ * Autoload classes. Try to locate classes in /lib and /ext
+ * ClassName should have a corresponding file named ClassName.class.php in /lib or /ext
+ * 
+ * @author Ruben Andreassen (rubean85@gmail.com)
+ */
+spl_autoload_register(function ($class_name) {
+    //Look in /lib
+    if (file_exists("..".DIRECTORY_SEPARATOR."lib".DIRECTORY_SEPARATOR.$class_name.".class.php")) {
+        require_once "..".DIRECTORY_SEPARATOR."lib".DIRECTORY_SEPARATOR.$class_name.".class.php";
+    } 
+    else if (file_exists(".".DIRECTORY_SEPARATOR."lib".DIRECTORY_SEPARATOR.$class_name.".class.php")) {
+        require_once ".".DIRECTORY_SEPARATOR."lib".DIRECTORY_SEPARATOR.$class_name.".class.php";
+    } 
+    //Look in /ext
+    else if (file_exists("..".DIRECTORY_SEPARATOR."ext".DIRECTORY_SEPARATOR.$class_name.".class.php")) {
+        require_once "..".DIRECTORY_SEPARATOR."ext".DIRECTORY_SEPARATOR.$class_name.".class.php";        
+    }
+    else if (file_exists(".".DIRECTORY_SEPARATOR."ext".DIRECTORY_SEPARATOR.$class_name.".class.php")) {
+        require_once ".".DIRECTORY_SEPARATOR."ext".DIRECTORY_SEPARATOR.$class_name.".class.php";        
+    }
+});
 
 /**
  * Class with personal configuration (passwords, API keys etc.)
  *
  * @author Ruben Andreassen (rubean85@gmail.com)
  */
-class projectConfig {
+class verisureConfig {
     /**
      * Verisure
      * ==========================================================
@@ -49,15 +71,28 @@ class projectConfig {
         //2 => ...
     );
 
+}
+
+/**
+ * Class with personal configuration (passwords, API keys etc.) for EmonCMS
+ * 
+ * @author Ruben Andreassen (rubean85@gmail.com)
+ */
+class emoncmsConfig {
     /**
-     * EmonCMS
      * Requires a EmonCMS server or account on the Cloud service
      */
     public static $EMONCMS_URL_BASE_PATH = "http://localhost/emoncms/";
     public static $EMONCMS_URL_API_WITH_KEY = "input/post.json?apikey=WRITE_API_KEY";
-    
+}
+
+/**
+ * Class with personal configuration (passwords, API keys etc.) for iRobot
+ * 
+ * @author Ruben Andreassen (rubean85@gmail.com)
+ */
+class irobotConfig {
     /**
-     * iRobot Roomba 980
      * Requires dorita980 and rest980 service running locally
      */
     public static $IROBOT_URL_BASE_PATH = "http://localhost:3000/";

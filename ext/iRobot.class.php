@@ -21,7 +21,7 @@ class iRobot extends verisureRemoteControl {
      */
     public function start() {
         //TODO: What if already started?
-        $this->urlGET(projectConfig::$IROBOT_URL_BASE_PATH.projectConfig::$IROBOT_URL_API_LOCAL_ACTION.self::$ACTION_START);
+        $this->urlGET(irobotConfig::$IROBOT_URL_BASE_PATH.irobotConfig::$IROBOT_URL_API_LOCAL_ACTION.self::$ACTION_START);
     }
     
     /**
@@ -29,6 +29,6 @@ class iRobot extends verisureRemoteControl {
      */
     public function dock() {
         //TODO: What if already docked?
-        $this->urlGET(projectConfig::$IROBOT_URL_BASE_PATH.projectConfig::$IROBOT_URL_API_LOCAL_ACTION.self::$ACTION_DOCK);
+        $this->urlGET(irobotConfig::$IROBOT_URL_BASE_PATH.irobotConfig::$IROBOT_URL_API_LOCAL_ACTION.self::$ACTION_DOCK);
     }
 }

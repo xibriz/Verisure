@@ -29,3 +29,8 @@ $ > verisure_x_csrf_token.txt && chmod 777 verisure_x_csrf_token.txt
 
 You must put your credentials and devices in the config file located in `config/default.config.php`
 
+Run the `verisure.php` script to verify that the library is working.
+
+# Usage
+
+TODO
