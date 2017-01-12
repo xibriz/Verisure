@@ -63,7 +63,7 @@ class verisure {
 
         curl_setopt($this->ch, CURLOPT_RETURNTRANSFER, 1);
         curl_setopt($this->ch, CURLOPT_FOLLOWLOCATION, 1);
-        curl_setopt($this->ch, CURLOPT_USERAGENT, "Mozilla/5.0 (X11; Linux x86_64; rv:10.0) Gecko/20100101 Firefox/50.0");
+        curl_setopt($this->ch, CURLOPT_USERAGENT, "Mozilla/5.0 (Windows NT x.y; Win64; x64; rv:10.0) Gecko/20100101 Firefox/50.0");
         curl_setopt($this->ch, CURLOPT_REFERER, verisureConfig::$VERISURE_URL_BASE_PATH.verisureConfig::$VERISURE_LOCAL."/start.html");
 
         curl_setopt($this->ch, CURLOPT_SSL_VERIFYHOST, 0);
@@ -100,30 +100,11 @@ class verisure {
      * 
      * @param string $url
      * @param array $keyValueArray
-     * @param boolean $includeXCsrfToken
      * @return string
      */
-    public function urlPOST($url, $keyValueArray, $includeXCsrfToken = true) {
+    public function urlPOST($url, $keyValueArray) {
         curl_setopt($this->ch, CURLOPT_URL, $url);
-        if ($includeXCsrfToken) {
-            if (isset($_GET['xCsrfToken'])) {
-                //TODO: check length
-                $this->addHeader(array(
-                    'X-CSRF-TOKEN: ' . filter_input(INPUT_GET, 'xCsrfToken'),
-                ));
-            } else if (file_exists(realpath(verisureConfig::$VERISURE_TMP_FILE_PATH) . DIRECTORY_SEPARATOR . self::$X_CSRF_TOKEN_FILE)) {
-                $handle = fopen(realpath(verisureConfig::$VERISURE_TMP_FILE_PATH) . DIRECTORY_SEPARATOR . self::$X_CSRF_TOKEN_FILE, 'r');
-                $token = fgets($handle);
-                fclose($handle);
-                //TODO: check length
-                $this->addHeader(array(
-                    'X-CSRF-TOKEN: ' . $token,
-                ));
-            } else {
-                error_log("Could not locate X-CSRF-TOKEN-file at location " . realpath(verisureConfig::$VERISURE_TMP_FILE_PATH) . DIRECTORY_SEPARATOR . self::$X_CSRF_TOKEN_FILE);
-            }
-        }
-
+        
         $encoded = '';
         foreach ($keyValueArray as $key => $value) {
             $encoded .= urlencode($key) . '=' . urlencode($value) . '&';

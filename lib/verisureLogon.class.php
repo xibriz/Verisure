@@ -93,7 +93,7 @@ class verisureLogon extends verisure {
             }
         }
 
-        return $this->urlPOST(verisureConfig::$VERISURE_URL_BASE_PATH . $formArray['action'], $formArray['keyValueArray'], false);
+        return $this->urlPOST(verisureConfig::$VERISURE_URL_BASE_PATH . $formArray['action'], $formArray['keyValueArray']);
     }
 
     /**
