@@ -110,13 +110,13 @@ class verisureSmartPlug extends verisure {
             fclose($handle);
             //TODO: check length of X-CSRF-TOKEN
             $this->addHeader(array(
+                'Origin: '. rtrim(verisureConfig::$VERISURE_URL_BASE_PATH, "/"),
                 'Accept: application/json, text/javascript, */*; q=0.01',
                 'Accept-Language: nb-NO,nb;q=0.9,no-NO;q=0.8,no;q=0.6,nn-NO;q=0.5,nn;q=0.4,en-US;q=0.3,en;q=0.1',
                 'Accept-Encoding: gzip, deflate, br',
                 'Content-Type: application/x-www-form-urlencoded; charset=UTF-8',
                 'X-Requested-With: XMLHttpRequest',
                 'Connection: keep-alive',
-                'Cookie=s_lastvisit=' . (time() - 120) . '' . rand(100, 999) . '; s_cc=true; nrvisitevar=Repeat; nrvisitprop=Repeat; s_invisit=true; s_sq=%5B%5BB%5D%5D',
                 'X-CSRF-TOKEN: ' . $token,
             ));
         } else {
