@@ -22,7 +22,6 @@ $ git clone https://github.com/xibriz/Verisure.git
 $ cd /tmp/
 $ > verisure_cookiefile.txt && chmod 777 verisure_cookiefile.txt
 $ > verisure_curl_error.txt && chmod 777 verisure_curl_error.txt
-$ > verisure_x_csrf_token.txt && chmod 777 verisure_x_csrf_token.txt
 ```
 
 # Configuration

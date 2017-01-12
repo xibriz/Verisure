@@ -104,24 +104,16 @@ class verisureSmartPlug extends verisure {
      * Add headers needed to do POST against Verisure
      */
     private function addHeaderX() {
-        if (file_exists(realpath(verisureConfig::$VERISURE_TMP_FILE_PATH) . DIRECTORY_SEPARATOR . self::$X_CSRF_TOKEN_FILE)) {
-            $handle = fopen(realpath(verisureConfig::$VERISURE_TMP_FILE_PATH) . DIRECTORY_SEPARATOR . self::$X_CSRF_TOKEN_FILE, 'r');
-            $token = fgets($handle);
-            fclose($handle);
-            //TODO: check length of X-CSRF-TOKEN
-            $this->addHeader(array(
-                'Origin: '. rtrim(verisureConfig::$VERISURE_URL_BASE_PATH, "/"),
-                'Accept: application/json, text/javascript, */*; q=0.01',
-                'Accept-Language: nb-NO,nb;q=0.9,no-NO;q=0.8,no;q=0.6,nn-NO;q=0.5,nn;q=0.4,en-US;q=0.3,en;q=0.1',
-                'Accept-Encoding: gzip, deflate, br',
-                'Content-Type: application/x-www-form-urlencoded; charset=UTF-8',
-                'X-Requested-With: XMLHttpRequest',
-                'Connection: keep-alive',
-                'X-CSRF-TOKEN: ' . $token,
-            ));
-        } else {
-            error_log("Could not locate X-CSRF-TOKEN-file at location " . realpath(verisureConfig::$VERISURE_TMP_FILE_PATH) . DIRECTORY_SEPARATOR . self::$X_CSRF_TOKEN_FILE);
-        }
+        $this->addHeader(array(
+            'Origin: ' . rtrim(verisureConfig::$VERISURE_URL_BASE_PATH, "/"),
+            'Accept: application/json, text/javascript, */*; q=0.01',
+            'Accept-Language: nb-NO,nb;q=0.9,no-NO;q=0.8,no;q=0.6,nn-NO;q=0.5,nn;q=0.4,en-US;q=0.3,en;q=0.1',
+            'Accept-Encoding: gzip, deflate, br',
+            'Content-Type: application/x-www-form-urlencoded; charset=UTF-8',
+            'X-Requested-With: XMLHttpRequest',
+            'Connection: keep-alive',
+            'X-CSRF-TOKEN: ' . $this->getXCsrfToken(),
+        ));
     }
 
 }

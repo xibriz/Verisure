@@ -11,7 +11,6 @@ class verisure {
     public static $LOGIN_INPUT_USERNAME = "j_username"; //NAME of username INPUT in login FORM
     public static $LOGIN_INPUT_PASSWORD = "j_password"; //NAME of passowrd INPUT in login FORM
     private static $COOKIE_FILE = "verisure_cookiefile.txt", $CURL_ERROR_FILE = "verisure_curl_error.txt";
-    public static $X_CSRF_TOKEN_FILE = "verisure_x_csrf_token.txt";
     public $ch = null;
     private $debug = true, $fh = null;
 
@@ -19,9 +18,6 @@ class verisure {
      * Init cULR
      */
     public function __construct() {
-//        if (isset($_GET['retryCount'])) {
-//            sleep(30); //TODO: Find out why it takes so long to use the active session after first login
-//        }
         //Try to create file
         if (!file_exists(realpath(verisureConfig::$VERISURE_TMP_FILE_PATH) . DIRECTORY_SEPARATOR . self::$COOKIE_FILE)) {
             fclose(fopen(realpath(verisureConfig::$VERISURE_TMP_FILE_PATH) . DIRECTORY_SEPARATOR . self::$COOKIE_FILE, "w"));
@@ -83,6 +79,19 @@ class verisure {
 
     public function addHeader($array) {
         curl_setopt($this->ch, CURLOPT_HTTPHEADER, $array);
+    }
+    
+    /**
+     * Retrieve Mypages and parse the HTML to get the X-CSRF-TOKEN
+     * 
+     * @return string
+     */
+    public function getXCsrfToken() {
+        $result = $this->urlGET(verisureConfig::$VERISURE_URL_BASE_PATH . verisureConfig::$VERISURE_LOCAL . "/start.html");
+        $matches = array();
+        preg_match('/(\'X-CSRF-TOKEN\').*?((?:[a-z][a-z0-9_]*)).*?/is', $result, $matches);
+        
+        return (isset($matches[2])) ? $matches[2] : '';
     }
 
     /**
