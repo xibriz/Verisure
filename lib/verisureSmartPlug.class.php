@@ -114,6 +114,7 @@ class verisureSmartPlug extends verisure {
             'Connection: keep-alive',
             'X-CSRF-TOKEN: ' . $this->getXCsrfToken(),
         ));
+        sleep(5); //Wait 5 seconds after receiving token before making the POST request. Have tested successfully with 4. If done too quicly you get a HTTP 403 error.
     }
 
 }
