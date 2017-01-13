@@ -7,18 +7,18 @@
  */
 spl_autoload_register(function ($class_name) {
     //Look in /lib
-    if (file_exists("..".DIRECTORY_SEPARATOR."lib".DIRECTORY_SEPARATOR.$class_name.".class.php")) {
-        require_once "..".DIRECTORY_SEPARATOR."lib".DIRECTORY_SEPARATOR.$class_name.".class.php";
+    if (file_exists(__DIR__.DIRECTORY_SEPARATOR."..".DIRECTORY_SEPARATOR."lib".DIRECTORY_SEPARATOR.$class_name.".class.php")) {
+        require_once __DIR__.DIRECTORY_SEPARATOR."..".DIRECTORY_SEPARATOR."lib".DIRECTORY_SEPARATOR.$class_name.".class.php";
     } 
-    else if (file_exists(".".DIRECTORY_SEPARATOR."lib".DIRECTORY_SEPARATOR.$class_name.".class.php")) {
-        require_once ".".DIRECTORY_SEPARATOR."lib".DIRECTORY_SEPARATOR.$class_name.".class.php";
+    else if (file_exists(__DIR__.DIRECTORY_SEPARATOR.".".DIRECTORY_SEPARATOR."lib".DIRECTORY_SEPARATOR.$class_name.".class.php")) {
+        require_once __DIR__.DIRECTORY_SEPARATOR.".".DIRECTORY_SEPARATOR."lib".DIRECTORY_SEPARATOR.$class_name.".class.php";
     } 
     //Look in /ext
-    else if (file_exists("..".DIRECTORY_SEPARATOR."ext".DIRECTORY_SEPARATOR.$class_name.".class.php")) {
-        require_once "..".DIRECTORY_SEPARATOR."ext".DIRECTORY_SEPARATOR.$class_name.".class.php";        
+    else if (file_exists(__DIR__.DIRECTORY_SEPARATOR."..".DIRECTORY_SEPARATOR."ext".DIRECTORY_SEPARATOR.$class_name.".class.php")) {
+        require_once __DIR__.DIRECTORY_SEPARATOR."..".DIRECTORY_SEPARATOR."ext".DIRECTORY_SEPARATOR.$class_name.".class.php";        
     }
-    else if (file_exists(".".DIRECTORY_SEPARATOR."ext".DIRECTORY_SEPARATOR.$class_name.".class.php")) {
-        require_once ".".DIRECTORY_SEPARATOR."ext".DIRECTORY_SEPARATOR.$class_name.".class.php";        
+    else if (file_exists(__DIR__.DIRECTORY_SEPARATOR.".".DIRECTORY_SEPARATOR."ext".DIRECTORY_SEPARATOR.$class_name.".class.php")) {
+        require_once __DIR__.DIRECTORY_SEPARATOR.".".DIRECTORY_SEPARATOR."ext".DIRECTORY_SEPARATOR.$class_name.".class.php";        
     }
 });
 

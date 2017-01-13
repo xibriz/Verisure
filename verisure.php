@@ -1,7 +1,7 @@
 <?php
 //Include config
-//require_once './config/default.config.php';
-require_once './config/ruben.config.php';
+//require_once __DIR__.DIRECTORY_SEPARATOR.'.'.DIRECTORY_SEPARATOR.'config'.DIRECTORY_SEPARATOR.'default.config.php';
+require_once __DIR__.DIRECTORY_SEPARATOR.'.'.DIRECTORY_SEPARATOR.'config'.DIRECTORY_SEPARATOR.'ruben.config.php';
 
 $verisureLogonObj = new verisureLogon();
 if ($verisureLogonObj->runLogon()) {
