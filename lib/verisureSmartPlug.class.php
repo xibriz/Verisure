@@ -66,6 +66,23 @@ class verisureSmartPlug extends verisure {
         }
         return $result;
     }
+    
+    /**
+     * Return the status of a soesific Smart Plug as a string
+     * 
+     * @param string $id
+     * @return string on/off/unknown
+     */
+    public function isSmartPlugOnString($id) {
+        $status = $this->isSmartPlugOn($id);
+        if ($status === true) {
+            return 'on';
+        } else if ($status === false) {
+            return 'off';
+        } else {
+            return 'unknown';
+        }
+    }
 
     /**
      * Turn a spesific Smart Plug ON
