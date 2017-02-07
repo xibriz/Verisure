@@ -7,14 +7,19 @@
  */
 class verisureRemoteControl extends verisure{
     //Yale Doorman
-    private static $TYPE_DOOR_LOCK = "DOOR_LOCK";
-    private static $STATUS_DOOR_LOCK_LOCKED = "locked"; //Door locked (låst)
-    private static $STATUS_DOOR_LOCK_UNLOCKED = "unlocked"; //Door unlocked (åpen)
+    public static $TYPE_DOOR_LOCK = "DOOR_LOCK";
+    public static $STATUS_DOOR_LOCK_LOCKED = "locked"; //Door locked (låst)
+    public static $STATUS_DOOR_LOCK_UNLOCKED = "unlocked"; //Door unlocked (åpen)
+    public static $STATE_DOOR_LOCK_LOCKED = "LOCKED";
+    public static $STATE_DOOR_LOCK_UNLOCKED = "UNLOCKED";
     //Alarm
-    private static $TYPE_ALARM_STATE = "ARM_STATE";
-    private static $STATUS_ALARM_STATE_UNARMED = "unarmed"; //Alarm unarmed (frakoblet)
-    private static $STATUS_ALARM_STATE_ARMEDHOME = "armedhome"; //Alarm armedhome (delsikring)
-    private static $STATUS_ALARM_STATE_ARMED = "armed"; //Alarm TODO (tilkoblet)
+    public static $TYPE_ALARM_STATE = "ARM_STATE";
+    public static $STATUS_ALARM_STATE_UNARMED = "unarmed"; //Alarm unarmed (frakoblet)
+    public static $STATUS_ALARM_STATE_ARMEDHOME = "armedhome"; //Alarm armedhome (delsikring)
+    public static $STATUS_ALARM_STATE_ARMED = "armed"; //Alarm TODO (tilkoblet)
+    public static $STATE_ALARM_STATE_ARMEDHOME = "ARMED_HOME";
+    public static $STATE_ALARM_STATE_ARMED = "ARMED_AWAY";
+    public static $STATE_ALARM_STATE_UNARMED = "DISARMED";
     
     
     public function __construct() {
@@ -97,4 +102,99 @@ class verisureRemoteControl extends verisure{
         }
         return $resultJSON;
     }
+    
+    
+    /**
+     * Lock a door
+     * 
+     * @param string $id
+     * @return string
+     */
+    public function lock($id) {
+        $url = verisureConfig::$VERISURE_URL_BASE_PATH . "remotecontrol/lockunlock.cmd";
+        $paramsArray = array(
+            "code" => verisureConfig::$VERISURE_CODE,
+            "deviceLabel" => $id,
+            "state" => self::$STATE_DOOR_LOCK_LOCKED,
+            "_csrf" => $this->preparePOST()
+        );
+
+        return $this->urlPOST($url, $paramsArray);
+    }
+
+    /**
+     * Unlock a door
+     * 
+     * @return string
+     */
+    public function unlock($id) {
+        $url = verisureConfig::$VERISURE_URL_BASE_PATH . "remotecontrol/lockunlock.cmd";
+        $paramsArray = array(
+            "code" => verisureConfig::$VERISURE_CODE,
+            "deviceLabel" => $id,
+            "state" => self::$STATE_DOOR_LOCK_UNLOCKED,
+            "_csrf" => $this->preparePOST()
+        );
+
+        return $this->urlPOST($url, $paramsArray);
+    }
+    
+    /**
+     * Set Armed Home
+     * 
+     * @return string
+     */
+    public function armedHome() {
+        $url = verisureConfig::$VERISURE_URL_BASE_PATH . "remotecontrol/armstatechange.cmd";
+        
+        $paramsArray = array(
+            "code" => verisureConfig::$VERISURE_CODE,
+            "state" => self::$STATE_ALARM_STATE_ARMEDHOME,
+            "_csrf" => $this->preparePOST()
+        );
+        
+        return $this->urlPOST($url, $paramsArray);
+    }
+    
+    /**
+     * Set Armed Away
+     * 
+     * @return string
+     */
+    public function armedAway() {
+        $url = verisureConfig::$VERISURE_URL_BASE_PATH . "remotecontrol/armstatechange.cmd";
+        $paramsArray = array(
+            "code" => verisureConfig::$VERISURE_CODE,
+            "state" => self::$STATE_ALARM_STATE_ARMED,
+            "_csrf" => $this->preparePOST()
+        );
+
+        return $this->urlPOST($url, $paramsArray);
+    }
+    
+    /**
+     * Set Unarmed
+     * 
+     * @return string
+     */
+    public function unarmed() {
+        $url = verisureConfig::$VERISURE_URL_BASE_PATH . "remotecontrol/armstatechange.cmd";
+        $paramsArray = array(
+            "code" => verisureConfig::$VERISURE_CODE,
+            "state" => self::$STATE_ALARM_STATE_UNARMED,
+            "_csrf" => $this->preparePOST()
+        );
+
+        return $this->urlPOST($url, $paramsArray);
+    }
+    
+    private function preparePOST() {
+        $token = $this->addHeaderPOST();
+        sleep(1);
+        $this->getRemoteStatus();
+        sleep(1);
+        return $token;
+    }
+    
+    
 }

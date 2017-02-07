@@ -24,10 +24,23 @@ class verisureLogon extends verisure {
         
         //Continue with the login process
         $loginPageHTML = $this->getLoginPageHTML();
+        if (isset($_GET['debug'])) {
+            echo "-------------------- getLoginPageHTML ----------------------";
+            var_dump($loginPageHTML);
+            echo $loginPageHTML;
+        }
         //Find all FORMs
         $formsArray = $this->parseHTMLtoFORMArray($loginPageHTML);
+        if (isset($_GET['debug'])) {
+            echo "-------------------- parseHTMLtoFORMArray ----------------------";
+            var_dump($formsArray);
+        }
         //Find the login FORM (could be more than one FORM on the page)
         $loginFormArray = $this->getFORMbyAction($formsArray, verisure::$LOGIN_ACTION);
+        if (isset($_GET['debug'])) {
+            echo "-------------------- getFORMbyAction ----------------------";
+            var_dump($loginFormArray);
+        }
         if (count($loginFormArray) === 0) { //Could not find login form
             error_log("Could not find Verisure login FORM based on ACTION " . verisure::$LOGIN_ACTION);
             return false;

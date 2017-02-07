@@ -40,6 +40,7 @@ class verisureConfig {
     public static $VERISURE_LOCAL = "no"; //Possible values: se, no, fi, fr, dk, frbe, nlbe, nl, uk
     public static $VERISURE_USERNAME = "your@mail.com";
     public static $VERISURE_PASSWORD = "XXXX";
+    public static $VERISURE_CODE = "XXXX";
 
     /**
      * Run verisureRemoteControl->getRemoteStatus() to find info to fill out here

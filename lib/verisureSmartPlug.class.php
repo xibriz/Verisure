@@ -7,9 +7,9 @@
  */
 class verisureSmartPlug extends verisure {
 
-    private static $STATUS_ON = "on";
-    private static $STATUS_OFF = "off";
-    private static $STATUS_UPDATING = "updating";
+    public static $STATUS_ON = "on";
+    public static $STATUS_OFF = "off";
+    public static $STATUS_UPDATING = "updating";
 
     /**
      * Constructor
@@ -28,6 +28,9 @@ class verisureSmartPlug extends verisure {
         $result = curl_exec($this->ch);
 
         $resultJSON = json_decode($result);
+        if (isset($_GET['debug'])) {
+            var_dump($resultJSON);
+        }
         return (json_last_error() === JSON_ERROR_NONE) ? $resultJSON : false;
     }
 
@@ -96,7 +99,13 @@ class verisureSmartPlug extends verisure {
             "targetDeviceLabel" => $id,
             "targetOn" => self::$STATUS_ON
         );
-        $this->addHeaderX();
+        $this->addHeaderPOST();
+        sleep(1);
+        $this->getSmartPlugStatus();
+        sleep(1);
+        if (isset($_GET['debug'])) {
+            var_dump($paramsArray);
+        }
 
         return $this->urlPOST($url, $paramsArray);
     }
@@ -112,27 +121,12 @@ class verisureSmartPlug extends verisure {
             "targetDeviceLabel" => $id,
             "targetOn" => self::$STATUS_OFF
         );
-        $this->addHeaderX();
-
-        return $this->urlPOST($url, $paramsArray);
-    }
-
-    /**
-     * Add headers needed to do POST against Verisure
-     */
-    private function addHeaderX() {
-        $this->addHeader(array(
-            'Origin: ' . rtrim(verisureConfig::$VERISURE_URL_BASE_PATH, "/"),
-            'Accept: application/json, text/javascript, */*; q=0.01',
-            'Accept-Language: nb-NO,nb;q=0.9,no-NO;q=0.8,no;q=0.6,nn-NO;q=0.5,nn;q=0.4,en-US;q=0.3,en;q=0.1',
-            'Accept-Encoding: gzip, deflate, br',
-            'Content-Type: application/x-www-form-urlencoded; charset=UTF-8',
-            'X-Requested-With: XMLHttpRequest',
-            'Connection: keep-alive',
-            'X-CSRF-TOKEN: ' . $this->getXCsrfToken(),
-        ));
-        //sleep(4); //Wait 4 seconds after receiving token before making the POST request. If done too quicly you get a HTTP 403 error.
+        $this->addHeaderPOST();
+        sleep(1);
         $this->getSmartPlugStatus();
+        sleep(1);
+        
+        return $this->urlPOST($url, $paramsArray);
     }
 
 }

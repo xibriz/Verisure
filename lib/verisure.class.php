@@ -78,7 +78,30 @@ class verisure {
     }
 
     public function addHeader($array) {
+        if (isset($_GET['debug'])) {
+            var_dump($array);
+        }
         curl_setopt($this->ch, CURLOPT_HTTPHEADER, $array);
+    }
+    
+    /**
+     * Add headers needed to do POST against Verisure
+     * 
+     * @return string X-CSRF-token
+     */
+    public function addHeaderPOST() {
+        $token = $this->getXCsrfToken();
+        $this->addHeader(array(
+            'Origin: ' . rtrim(verisureConfig::$VERISURE_URL_BASE_PATH, "/"),
+            'Accept: application/json, text/javascript, */*; q=0.01',
+            'Accept-Language: nb-NO,nb;q=0.9,no-NO;q=0.8,no;q=0.6,nn-NO;q=0.5,nn;q=0.4,en-US;q=0.3,en;q=0.1',
+            'Accept-Encoding: gzip, deflate, br',
+            'Content-Type: application/x-www-form-urlencoded; charset=UTF-8',
+            'X-Requested-With: XMLHttpRequest',
+            'Connection: keep-alive',
+            'X-CSRF-TOKEN: ' . $token,
+        ));        
+        return $token;
     }
     
     /**
@@ -101,7 +124,13 @@ class verisure {
      */
     public function urlGET($url) {
         curl_setopt($this->ch, CURLOPT_URL, $url);
-        return curl_exec($this->ch);
+        $result = curl_exec($this->ch);
+        if (isset($_GET['debug'])) {
+            echo "------------------- urlGET ------------";
+            var_dump($url);
+            var_dump($result);
+        }
+        return $result;
     }
 
     /**
@@ -219,6 +248,41 @@ class verisure {
             list($date, $time) = explode(" ", $dateStr);
             list($day, $month, $year) = explode(".", $date);
             return strtotime($year."-".$month."-".$day." ".$time);
+        }
+    }
+    
+    
+    /**
+     * Converting device names from local language to English
+     * 
+     * @param string $deviceName
+     * @return string
+     */
+    public function convertDeviceNameToEnglish($deviceName) {
+        if (verisureConfig::$VERISURE_LOCAL === 'no') {
+            return $this->convertDeviceNameToEnglishNO($deviceName);
+        } else { //TODO: Add other languages
+            error_log("Could not convert device name to english because the current local (".verisureConfig::$VERISURE_LOCAL.") does not have a suitable function. Using original device name!");
+            return $deviceName;
+        }
+    }
+    
+    /**
+     * Converting device names in Norwegian to English 
+     * 
+     * @param string $deviceName
+     * @return string
+     */
+    private function convertDeviceNameToEnglishNO($deviceName) {
+        switch ($deviceName) {
+            case "Røykdetektor":
+                return "Smoke Detector";
+            case "Vanndetektor":
+                return "Water Detector";
+            case "Sirene":
+                return "Siren";
+            default:
+                return $deviceName;
         }
     }
 
