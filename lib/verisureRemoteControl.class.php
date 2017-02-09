@@ -135,6 +135,9 @@ class verisureRemoteControl extends verisure{
             "state" => self::$STATE_DOOR_LOCK_UNLOCKED,
             "_csrf" => $this->preparePOST()
         );
+        if (isset($_GET['debug'])) {
+            var_dump($paramsArray);
+        }
 
         return $this->urlPOST($url, $paramsArray);
     }
@@ -190,9 +193,7 @@ class verisureRemoteControl extends verisure{
     
     private function preparePOST() {
         $token = $this->addHeaderPOST();
-        sleep(1);
         $this->getRemoteStatus();
-        sleep(1);
         return $token;
     }
     

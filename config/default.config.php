@@ -32,6 +32,7 @@ class verisureConfig {
      * Verisure
      * ==========================================================
      */
+    public static $VERISURE_HOST = "mypages.verisure.com";
     public static $VERISURE_URL_BASE_PATH = "https://mypages.verisure.com/";
     public static $VERISURE_TMP_FILE_PATH = "/tmp";
     /**
