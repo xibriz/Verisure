@@ -100,9 +100,7 @@ class verisureSmartPlug extends verisure {
             "targetOn" => self::$STATUS_ON
         );
         $this->addHeaderPOST();
-        sleep(1);
         $this->getSmartPlugStatus();
-        sleep(1);
         if (isset($_GET['debug'])) {
             var_dump($paramsArray);
         }
@@ -122,9 +120,7 @@ class verisureSmartPlug extends verisure {
             "targetOn" => self::$STATUS_OFF
         );
         $this->addHeaderPOST();
-        sleep(1);
         $this->getSmartPlugStatus();
-        sleep(1);
         
         return $this->urlPOST($url, $paramsArray);
     }

@@ -93,6 +93,7 @@ class verisure {
         $token = $this->getXCsrfToken();
         $this->addHeader(array(
             'Origin: ' . rtrim(verisureConfig::$VERISURE_URL_BASE_PATH, "/"),
+            'Host: ' . verisureConfig::$VERISURE_HOST,
             'Accept: application/json, text/javascript, */*; q=0.01',
             'Accept-Language: nb-NO,nb;q=0.9,no-NO;q=0.8,no;q=0.6,nn-NO;q=0.5,nn;q=0.4,en-US;q=0.3,en;q=0.1',
             'Accept-Encoding: gzip, deflate, br',
@@ -112,9 +113,9 @@ class verisure {
     public function getXCsrfToken() {
         $result = $this->urlGET(verisureConfig::$VERISURE_URL_BASE_PATH . verisureConfig::$VERISURE_LOCAL . "/start.html");
         $matches = array();
-        preg_match('/(\'X-CSRF-TOKEN\').*?((?:[a-z][a-z0-9_]*)).*?/is', $result, $matches);
+        preg_match('/(\'X-CSRF-TOKEN\').*?((?:[a-z0-9_][a-z0-9_]*)).*?/is', $result, $matches);
         
-        return (isset($matches[2])) ? $matches[2] : '';
+        return (isset($matches[2]) && strlen($matches[2]) === 64) ? $matches[2] : '';
     }
 
     /**
@@ -146,6 +147,9 @@ class verisure {
         $encoded = '';
         foreach ($keyValueArray as $key => $value) {
             $encoded .= urlencode($key) . '=' . urlencode($value) . '&';
+        }
+        if (isset($_GET['debug'])) {
+            var_dump(rtrim($encoded, '&'));
         }
 
         curl_setopt($this->ch, CURLOPT_POSTFIELDS, rtrim($encoded, '&'));
